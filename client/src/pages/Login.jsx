@@ -1,8 +1,13 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import api from '../services/api';
 
 const Login = () => {
-  // Form field state
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -13,7 +18,6 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
 
-  const navigate = useNavigate();
 
   // Handlers will go here
 
@@ -72,72 +76,33 @@ const handleSubmit = async (e) => {
   setIsLoading(true);
 
   try {
-    // Send login request
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password
-      })
-    });
+    const payload = {
+      email: formData.email.trim().toLowerCase(),
+      password: formData.password
+    };
+    const { data } = await api.post('/api/auth/login', payload);
 
-    const data = await response.json();
-
-    if (response.ok) {
-      // Login successful
-      
-      // 1. Store token in localStorage
-      localStorage.setItem('token', data.token);
-      
-      // 2. Store user data (optional, for display purposes)
-      localStorage.setItem('user', JSON.stringify(data.user));
+    if (data?.success) {
+      login(data.user, data.token);
 
       // 3. Clear form
       setFormData({ email: '', password: '' });
 
       // 4. Redirect to dashboard
-      navigate('/dashboard');
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
 
     } else {
-      // Login failed
-      setApiError(data.message || 'Login failed. Please try again.');
+      setApiError(data?.message || 'Login failed. Please try again.');
     }
 
   } catch (error) {
     console.error('Login error:', error);
-    setApiError('Unable to connect to server. Please try again.');
+    setApiError(error.response?.data?.message || 'Unable to connect to server. Please try again.');
   } finally {
     setIsLoading(false);
   }
 };
-
-const isTokenExpired = (token) => {
-  if (!token) return true;
-
-  try {
-    // Decode the payload (middle part of JWT)
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    
-    // Check if token has expired
-    const currentTime = Date.now() / 1000; // Convert to seconds
-    return payload.exp < currentTime;
-    
-  } catch (error) {
-    // If decoding fails, consider token invalid
-    return true;
-  }
-};
-
-// Usage example:
-const token = localStorage.getItem('token');
-if (isTokenExpired(token)) {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  // Redirect to login
-}
 
   return (
   <div style={containerStyle}>

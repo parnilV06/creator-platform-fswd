@@ -5,31 +5,70 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import { AuthProvider } from './context/AuthContext.jsx';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import PublicRoute from './components/common/PublicRoute';
+import CreatePost from './pages/CreatePost';
+
 
 function App() {
   return (
     <BrowserRouter>
-      <div style={appStyle}>
-        {/* Header appears on all pages */}
-        <Header />
+      <AuthProvider>
 
-        {/* Main content area */}
-        <main style={mainStyle}>
-          <Routes>
-            {/* Define your routes here */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            
-            {/* 404 Page - catches all unmatched routes */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
 
-        {/* Footer appears on all pages */}
-        <Footer />
-      </div>
+        <div style={appStyle}>
+          {/* Header appears on all pages */}
+          <Header />
+
+          {/* Main content area */}
+          <main style={mainStyle}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Home />} />
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
+
+              <Route
+                path="/register"
+                element={
+                  <PublicRoute>
+                    <Register />
+                  </PublicRoute>
+                }
+              />
+
+
+              <Route path="/dashboard" element={<ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+              }
+              />
+
+              <Route
+                path="/create"
+                element={
+                  <ProtectedRoute>
+                    <CreatePost />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* 404 Page - catches all unmatched routes */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+
+          {/* Footer appears on all pages */}
+          <Footer />
+        </div>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

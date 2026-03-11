@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import api from '../../services/api';
 
 const ConnectionTest = () => {
   const [message, setMessage] = useState('');
@@ -11,14 +12,8 @@ const ConnectionTest = () => {
     setMessage('');
 
     try {
-      // Using relative URL because of Vite proxy
-      const response = await fetch('/api/health');
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
+      const response = await api.get('/api/health');
+      const data = response.data;
       setMessage(data.message);
       
     } catch (err) {
