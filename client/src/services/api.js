@@ -1,5 +1,9 @@
 import axios from "axios";
 
+export const getApiErrorMessage = (error) => {
+  return error.response?.data?.message || error.message || "Something went wrong";
+};
+
 // Create Axios instance with base configuration
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
@@ -44,10 +48,11 @@ Handle global API errors like 401 Unauthorized
 
 api.interceptors.response.use(
   (response) => {
-    // If response is successful, just return it
     return response;
   },
   (error) => {
+    error.message = getApiErrorMessage(error);
+
     if (error.response?.status === 401) {
       console.warn("Session expired");
 
@@ -60,7 +65,6 @@ api.interceptors.response.use(
       }
     }
 
-    // Pass error to the component that made the request
     return Promise.reject(error);
   }
 );

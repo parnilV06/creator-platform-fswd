@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import PostForm from '../components/posts/PostForm';
 import api from '../services/api';
+import { getApiErrorMessage } from '../services/api';
 
 const CreatePost = () => {
   const [formData, setFormData] = useState({
@@ -30,103 +33,30 @@ const CreatePost = () => {
       const response = await api.post('/api/posts', formData);
       
       if (response.data.success) {
-        // Redirect to dashboard after successful creation
+        toast.success('Post created successfully');
         navigate('/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create post');
+      const message = getApiErrorMessage(err);
+      setError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={formContainerStyle}>
-        <h1>Create New Post</h1>
-        
-        {error && <div style={errorStyle}>{error}</div>}
-
-        <form onSubmit={handleSubmit} style={formStyle}>
-          {/* Title */}
-          <div style={fieldStyle}>
-            <label>Title</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="Enter post title"
-              required
-              style={inputStyle}
-            />
-          </div>
-
-          {/* Content */}
-          <div style={fieldStyle}>
-            <label>Content</label>
-            <textarea
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              placeholder="Write your post content..."
-              rows="10"
-              required
-              style={textareaStyle}
-            />
-          </div>
-
-          {/* Category */}
-          <div style={fieldStyle}>
-            <label>Category</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              style={inputStyle}
-            >
-              <option value="Technology">Technology</option>
-              <option value="Lifestyle">Lifestyle</option>
-              <option value="Travel">Travel</option>
-              <option value="Food">Food</option>
-            </select>
-          </div>
-
-          {/* Status */}
-          <div style={fieldStyle}>
-            <label>Status</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              style={inputStyle}
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
-
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            style={buttonStyle}
-          >
-            {isLoading ? 'Creating...' : 'Create Post'}
-          </button>
-        </form>
-      </div>
-    </div>
+    <PostForm
+      heading="Create New Post"
+      formData={formData}
+      error={error}
+      isSaving={isLoading}
+      submitLabel="Create Post"
+      submittingLabel="Creating..."
+      onChange={handleChange}
+      onSubmit={handleSubmit}
+    />
   );
 };
-
-// Add styles...
-const containerStyle = { /* ... */ };
-const formContainerStyle = { /* ... */ };
-const formStyle = { /* ... */ };
-const fieldStyle = { /* ... */ };
-const inputStyle = { /* ... */ };
-const textareaStyle = { /* ... */ };
-const buttonStyle = { /* ... */ };
-const errorStyle = { /* ... */ };
 
 export default CreatePost;

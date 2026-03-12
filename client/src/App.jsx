@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
@@ -14,6 +16,7 @@ import EditPost from './pages/EditPost';
 
 function App() {
   return (
+    
     <BrowserRouter>
       <AuthProvider>
 
@@ -77,6 +80,7 @@ function App() {
 
           {/* Footer appears on all pages */}
           <Footer />
+          <ToastContainer position="top-right" autoClose={3000} />
         </div>
       </AuthProvider>
     </BrowserRouter>

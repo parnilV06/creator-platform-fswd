@@ -10,11 +10,13 @@ import {
 
 const router = express.Router();
 
-// Both routes require authentication
-router.post('/', protect, createPost);
-router.get('/', protect, getPosts);
-router.delete('/:id', protect, deletePost);
-router.get('/:id', protect, getPostById); 
-router.put('/:id', protect, updatePost);  
+router.route('/')
+  .post(protect, createPost)
+  .get(protect, getPosts);
+
+router.route('/:id')
+  .get(protect, getPostById)
+  .put(protect, updatePost)
+  .delete(protect, deletePost);
 
 export default router;
