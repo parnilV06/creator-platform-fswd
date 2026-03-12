@@ -5,7 +5,7 @@ const createHttpError = (statusCode, message) => ({ statusCode, message });
 // @desc    Create new post
 // @route   POST /api/posts
 // @access  Private
-export const createPost = async (req, res, next) => {
+export const createPost = (io) => async (req, res, next) => {
   try {
     const { title, content, category, status } = req.body;
 
@@ -24,6 +24,19 @@ export const createPost = async (req, res, next) => {
       status,
       author: req.user._id
     });
+
+    const eventPayload = {
+      message: `New post created by ${req.user.name}`,
+      post: {
+        _id: post._id,
+        title: post.title,
+        createdBy: req.user.name
+      }
+    };
+
+    console.log('Emitting newPost event');
+    io.emit('newPost', eventPayload);
+    console.log('Emitted newPost event', post._id);
 
     res.status(201).json({
       success: true,

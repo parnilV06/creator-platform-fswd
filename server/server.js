@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import jwt from 'jsonwebtoken';
 import connectDB from './config/database.js';
 import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js'; 
@@ -45,12 +46,29 @@ const io = new Server(httpServer, {
     credentials: true
   }
 });
+
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+
+    if (!token) {
+      return next(new Error('Authentication error'));
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.data.user = decoded;
+    return next();
+  } catch (error) {
+    return next(new Error('Authentication error'));
+  }
+});
+
 io.on('connection', (socket) => {
-  console.log(`✅ User connected: ${socket.id}`);
+  console.log(`User connected: ${socket.id} | User: ${socket.data.user.email}`);
 
   // Handle disconnection
   socket.on('disconnect', (reason) => {
-    console.log(`❌ User disconnected: ${socket.id} (${reason})`);
+    console.log(`User disconnected: ${socket.id} (${reason})`);
   });
 });
 // Middleware
@@ -80,7 +98,7 @@ app.get('/api/health', (req, res) => {
     database: 'Connected'
   });
 });
-app.use('/api/posts', postRoutes);
+app.use('/api/posts', postRoutes(io));
 
 app.use((req, res, next) => {
   next({

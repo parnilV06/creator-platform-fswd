@@ -8,15 +8,19 @@ import {
   deletePost
 } from '../controllers/postController.js';
 
-const router = express.Router();
+const postRoutes = (io) => {
+  const router = express.Router();
 
-router.route('/')
-  .post(protect, createPost)
-  .get(protect, getPosts);
+  router.route('/')
+    .post(protect, createPost(io))
+    .get(protect, getPosts);
 
-router.route('/:id')
-  .get(protect, getPostById)
-  .put(protect, updatePost)
-  .delete(protect, deletePost);
+  router.route('/:id')
+    .get(protect, getPostById)
+    .put(protect, updatePost)
+    .delete(protect, deletePost);
 
-export default router;
+  return router;
+};
+
+export default postRoutes;

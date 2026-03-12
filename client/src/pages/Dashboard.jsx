@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import PostList from '../components/posts/PostList';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
@@ -16,17 +16,19 @@ const Dashboard = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    socket.auth = { token: localStorage.getItem('token') };
+
     // Connect when component mounts (user is logged in)
     socket.connect();
 
     // Listen for successful connection
     socket.on('connect', () => {
-      console.log('🔌 Socket connected:', socket.id);
+      console.log('Socket connected', socket.id);
     });
 
     // Listen for disconnection
     socket.on('disconnect', (reason) => {
-      console.log('❌ Socket disconnected:', reason);
+      console.log('Socket disconnected', reason);
     });
 
     // Listen for connection errors
@@ -34,11 +36,19 @@ const Dashboard = () => {
       console.error('Socket connection error:', error.message);
     });
 
+    socket.on('newPost', (data) => {
+      console.log('New post event:', data);
+      if (data?.message) {
+        toast.success(data.message);
+      }
+    });
+
     // Cleanup when component unmounts
     return () => {
       socket.off('connect');
       socket.off('disconnect');
       socket.off('connect_error');
+      socket.off('newPost');
       socket.disconnect();
     };
   }, []);

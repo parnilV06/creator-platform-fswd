@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'react-hot-toast';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
@@ -16,74 +15,78 @@ import EditPost from './pages/EditPost';
 
 function App() {
   return (
-    
-    <BrowserRouter>
-      <AuthProvider>
+    <>
+      <Toaster position="top-right" />
+      <BrowserRouter>
+        <AuthProvider>
 
 
-        <div style={appStyle}>
-          {/* Header appears on all pages */}
-          <Header />
+          <div style={appStyle}>
+            {/* Header appears on all pages */}
+            <Header />
 
-          {/* Main content area */}
-          <main style={mainStyle}>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Home />} />
-              <Route
-                path="/login"
-                element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
-                }
-              />
+            {/* Main content area */}
+            <main style={mainStyle}>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Home />} />
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
 
-              <Route
-                path="/register"
-                element={
-                  <PublicRoute>
-                    <Register />
-                  </PublicRoute>
-                }
-              />
+                <Route
+                  path="/register"
+                  element={
+                    <PublicRoute>
+                      <Register />
+                    </PublicRoute>
+                  }
+                />
 
 
-              <Route path="/dashboard" element={<ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-              }
-              />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/create"
-                element={
-                  <ProtectedRoute>
-                    <CreatePost />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreatePost />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/edit/:id"
-                element={
-                  <ProtectedRoute>
-                    <EditPost />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/edit/:id"
+                  element={
+                    <ProtectedRoute>
+                      <EditPost />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* 404 Page - catches all unmatched routes */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
+                {/* 404 Page - catches all unmatched routes */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
 
-          {/* Footer appears on all pages */}
-          <Footer />
-          <ToastContainer position="top-right" autoClose={3000} />
-        </div>
-      </AuthProvider>
-    </BrowserRouter>
+            {/* Footer appears on all pages */}
+            <Footer />
+          </div>
+        </AuthProvider>
+      </BrowserRouter>
+    </>
   );
 }
 
