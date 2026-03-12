@@ -9,6 +9,7 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import PublicRoute from './components/common/PublicRoute';
 import CreatePost from './pages/CreatePost';
+import EditPost from './pages/EditPost';
 
 
 function App() {
@@ -56,6 +57,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <CreatePost />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/edit/:id"
+                element={
+                  <ProtectedRoute>
+                    <EditPost />
                   </ProtectedRoute>
                 }
               />
