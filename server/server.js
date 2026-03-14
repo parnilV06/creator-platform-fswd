@@ -1,8 +1,15 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import jwt from 'jsonwebtoken';
 import connectDB from './config/database.js';
 import userRoutes from './routes/userRoutes.js';
+import authRoutes from './routes/authRoutes.js'; 
+import postRoutes from './routes/postRoutes.js';
+import uploadRoutes from './routes/upload.js';
+import errorHandler from './middleware/errorHandler.js';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 // Load environment variables
 dotenv.config();
@@ -11,15 +18,80 @@ dotenv.config();
 connectDB();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
+// Keep CORS origins in one place for both API and Socket.IO.
+const defaultAllowedOrigins = ['http://localhost:5173', 'http://localhost:5174'];
+const envAllowedOrigins = (process.env.CLIENT_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envAllowedOrigins])];
+
+const isOriginAllowed = (origin) => {
+  // Allow requests with no Origin header (e.g., same-origin/server-to-server).
+  if (!origin) return true;
+  return allowedOrigins.includes(origin);
+};
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    },
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+
+    if (!token) {
+      return next(new Error('Authentication error'));
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.data.user = decoded;
+    return next();
+  } catch (error) {
+    return next(new Error('Authentication error'));
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log(`User connected: ${socket.id} | User: ${socket.data.user.email}`);
+
+  // Handle disconnection
+  socket.on('disconnect', (reason) => {
+    console.log(`User disconnected: ${socket.id} (${reason})`);
+  });
+});
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(Object.assign(new Error('Not allowed by CORS'), {
+      statusCode: 403
+    }));
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
 app.use(express.json());
 
 // Routes
 app.use('/api/users', userRoutes);
-
+app.use('/api/auth', authRoutes); // Add this line
+app.use('/api/upload', uploadRoutes);
 // Health check endpoint (keep this for testing)
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -28,8 +100,19 @@ app.get('/api/health', (req, res) => {
     database: 'Connected'
   });
 });
+app.use('/api/posts', postRoutes(io));
+
+app.use((req, res, next) => {
+  next({
+    statusCode: 404,
+    message: 'Route not found'
+  });
+});
+
+app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🔌 Socket.io ready for connections`);
 });
