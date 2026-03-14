@@ -6,6 +6,7 @@ import connectDB from './config/database.js';
 import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js'; 
 import postRoutes from './routes/postRoutes.js';
+import uploadRoutes from './routes/upload.js';
 import errorHandler from './middleware/errorHandler.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -90,6 +91,7 @@ app.use(express.json());
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes); // Add this line
+app.use('/api/upload', uploadRoutes);
 // Health check endpoint (keep this for testing)
 app.get('/api/health', (req, res) => {
   res.json({ 
