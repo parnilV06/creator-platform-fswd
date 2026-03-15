@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import PostForm from '../components/posts/PostForm';
+import ImageUpload from '../components/ImageUpload';
 import api from '../services/api';
 import { getApiErrorMessage } from '../services/api';
 
@@ -45,17 +46,25 @@ const CreatePost = () => {
     }
   };
 
+  const handleUpload = (formData) => {
+    console.log('FormData ready:', formData.get('image'));
+  };
+
   return (
-    <PostForm
-      heading="Create New Post"
-      formData={formData}
-      error={error}
-      isSaving={isLoading}
-      submitLabel="Create Post"
-      submittingLabel="Creating..."
-      onChange={handleChange}
-      onSubmit={handleSubmit}
-    />
+    <>
+      <PostForm
+        heading="Create New Post"
+        formData={formData}
+        error={error}
+        isSaving={isLoading}
+        submitLabel="Create Post"
+        submittingLabel="Creating..."
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+      />
+
+      <ImageUpload onUpload={handleUpload} />
+    </>
   );
 };
 
