@@ -15,3 +15,4 @@ const connectDB = async () => {
 };
 
 export default connectDB;
+// database connection to MongoDB

@@ -1,35 +1,113 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import { AuthProvider } from './context/AuthContext.jsx';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import PublicRoute from './components/common/PublicRoute';
+import CreatePost from './pages/CreatePost';
+import EditPost from './pages/EditPost';
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Toaster position="top-right" />
+      <BrowserRouter>
+        <AuthProvider>
+
+
+          <div style={appStyle}>
+            {/* Header appears on all pages */}
+            <Header />
+
+            {/* Main content area */}
+            <main style={mainStyle}>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Home />} />
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
+
+                <Route
+                  path="/register"
+                  element={
+                    <PublicRoute>
+                      <Register />
+                    </PublicRoute>
+                  }
+                />
+
+
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreatePost />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/edit/:id"
+                  element={
+                    <ProtectedRoute>
+                      <EditPost />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 404 Page - catches all unmatched routes */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+
+            {/* Footer appears on all pages */}
+            <Footer />
+          </div>
+        </AuthProvider>
+      </BrowserRouter>
     </>
-  )
+  );
 }
 
-export default App
+// Simple 404 component
+const NotFound = () => {
+  return (
+    <div style={{ textAlign: 'center', padding: '4rem' }}>
+      <h1>404 - Page Not Found</h1>
+      <p>The page you're looking for doesn't exist.</p>
+    </div>
+  );
+};
+
+const appStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: '100vh',
+};
+
+const mainStyle = {
+  flex: 1,
+};
+
+export default App;

@@ -54,6 +54,16 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// @desc    Get currently authenticated user
+// @route   GET /api/users/me
+// @access  Private
+export const getCurrentUser = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    data: req.user,
+  });
+};
+
 // @desc    Get all users
 // @route   GET /api/users
 // @access  Public (will be protected later with auth)
