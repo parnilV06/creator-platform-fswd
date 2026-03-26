@@ -5,7 +5,7 @@ const createHttpError = (statusCode, message) => ({ statusCode, message });
 // @desc    Create new post
 // @route   POST /api/posts
 // @access  Private
-export const createPost = (io) => async (req, res, next) => {
+export const createPost = async (req, res, next) => {
   try {
     const { title, content, category, status } = req.body;
 
@@ -34,9 +34,10 @@ export const createPost = (io) => async (req, res, next) => {
       }
     };
 
-    console.log('Emitting newPost event');
-    io.emit('newPost', eventPayload);
-    console.log('Emitted newPost event', post._id);
+    const io = req.app.get('io');
+    if (io?.emit) {
+      io.emit('newPost', eventPayload);
+    }
 
     res.status(201).json({
       success: true,
