@@ -2,8 +2,12 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/creators-platform';
-    
+    // const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/creators-platform';
+    const mongoURI =
+  process.env.NODE_ENV === 'test'
+    ? process.env.MONGODB_URI_TEST
+    : process.env.MONGODB_URI;
+
     await mongoose.connect(mongoURI);
     
     console.log('✅ MongoDB connected successfully');

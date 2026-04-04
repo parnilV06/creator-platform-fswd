@@ -52,18 +52,25 @@ const CreatePost = () => {
 
   return (
     <>
-      <PostForm
-        heading="Create New Post"
-        formData={formData}
-        error={error}
-        isSaving={isLoading}
-        submitLabel="Create Post"
-        submittingLabel="Creating..."
-        onChange={handleChange}
-        onSubmit={handleSubmit}
-      />
+      <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+        <h2>Post Application</h2>
+        
+        <div style={{ marginBottom: '30px', padding: '20px', border: '1px solid #eee', borderRadius: '8px' }}>
+          <h3>Upload Post Image</h3>
+          <ImageUpload onUpload={handleUpload} />
+        </div>
 
-      <ImageUpload onUpload={handleUpload} />
+        <PostForm
+          heading="Create New Post"
+          formData={formData}
+          error={error}
+          isSaving={isLoading}
+          submitLabel="Create Post"
+          submittingLabel="Creating..."
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+        />
+      </div>
     </>
   );
 };
