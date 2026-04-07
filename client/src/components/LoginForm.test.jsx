@@ -1,113 +1,66 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+// src/components/LoginForm.test.jsx
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import LoginForm from '../pages/Login';
-import api from '../services/api';
-import { useAuth } from '../hooks/useAuth';
+import LoginForm from './LoginForm';
 
-const mockNavigate = jest.fn();
+describe('LoginForm — interaction tests', () => {
 
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom');
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
+  it('allows the user to type into the email field', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm onSubmit={jest.fn()} />);
 
-jest.mock('../hooks/useAuth', () => ({
-  useAuth: jest.fn(),
-}));
+    await user.type(screen.getByLabelText(/email/i), 'alice@example.com');
 
-jest.mock('../services/api', () => ({
-  __esModule: true,
-  default: {
-    post: jest.fn(),
-  },
-}));
+    expect(screen.getByLabelText(/email/i)).toHaveValue('alice@example.com');
+  });
 
-const renderLoginForm = () => {
-  return render(
-    <MemoryRouter>
-      <LoginForm />
-    </MemoryRouter>
-  );
-};
+  it('allows the user to type into the password field', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm onSubmit={jest.fn()} />);
 
+    await user.type(screen.getByLabelText(/password/i), 'supersecret');
 
-describe('LoginForm Component', () => {
-  const mockLogin = jest.fn();
+    expect(screen.getByLabelText(/password/i)).toHaveValue('supersecret');
+  });
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    useAuth.mockReturnValue({
-      login: mockLogin,
+  it('calls onSubmit with email and password when the form is submitted', async () => {
+    const mockSubmit = jest.fn();
+    const user = userEvent.setup();
+    render(<LoginForm onSubmit={mockSubmit} />);
+
+    await user.type(screen.getByLabelText(/email/i), 'alice@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'supersecret');
+    await user.click(screen.getByRole('button', { name: /login/i }));
+
+    expect(mockSubmit).toHaveBeenCalledTimes(1);
+    expect(mockSubmit).toHaveBeenCalledWith({
+      email: 'alice@example.com',
+      password: 'supersecret',
     });
   });
 
-  it('renders all form fields and the submit button', () => {
-    renderLoginForm();
+  it('shows an error and does not call onSubmit when fields are empty', async () => {
+    const mockSubmit = jest.fn();
+    const user = userEvent.setup();
+    render(<LoginForm onSubmit={mockSubmit} />);
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /login/i }));
+
+    expect(screen.getByRole('alert'))
+      .toHaveTextContent(/both fields are required/i);
+    expect(mockSubmit).not.toHaveBeenCalled();
   });
 
-  it('shows a validation error when the form is submitted empty', () => {
-    renderLoginForm();
+  it('shows an error when only the email is filled in', async () => {
+    const mockSubmit = jest.fn();
+    const user = userEvent.setup();
+    render(<LoginForm onSubmit={mockSubmit} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    await user.type(screen.getByLabelText(/email/i), 'alice@example.com');
+    await user.click(screen.getByRole('button', { name: /login/i }));
 
-    expect(screen.getByText(/email is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/password is required/i)).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(mockSubmit).not.toHaveBeenCalled();
   });
 
-  it('submits valid credentials and redirects on success', async () => {
-    api.post.mockResolvedValue({
-      data: {
-        success: true,
-        user: { id: 'u1', name: 'Alice' },
-        token: 'token-123',
-      },
-    });
-
-    renderLoginForm();
-
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: 'USER@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: 'secret123' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
-
-    await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/api/auth/login', {
-        email: 'user@example.com',
-        password: 'secret123',
-      });
-    });
-
-    expect(mockLogin).toHaveBeenCalledWith(
-      { id: 'u1', name: 'Alice' },
-      'token-123'
-    );
-    expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true });
-  });
-
-  it('shows API error message when login request fails', async () => {
-    api.post.mockRejectedValue({
-      response: {
-        data: { message: 'Invalid credentials' },
-      },
-    });
-
-    renderLoginForm();
-
-    await userEvent.type(screen.getByLabelText(/email/i), 'user@example.com');
-    await userEvent.type(screen.getByLabelText(/password/i), 'wrong-password');
-    await userEvent.click(screen.getByRole('button', { name: /login/i }));
-
-    expect(await screen.findByText(/invalid credentials/i)).toBeInTheDocument();
-  });
 });
