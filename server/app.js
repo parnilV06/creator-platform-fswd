@@ -16,9 +16,10 @@ const createMockIo = () => ({
 export const createApp = ({ io = null } = {}) => {
   const app = express();
   app.set('io', io || createMockIo());
+  const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
 
   // Middleware
-  app.use(cors());
+  app.use(cors({ origin: allowedOrigin }));
   app.use(express.json());
 
   // Routes
