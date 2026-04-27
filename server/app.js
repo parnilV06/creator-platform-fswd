@@ -50,6 +50,7 @@ export const createApp = ({ io = null } = {}) => {
 
   return app;
 };
+console.log("CI test");
 
 const app = createApp();
 export default app;
