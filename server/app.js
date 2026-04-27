@@ -50,7 +50,7 @@ export const createApp = ({ io = null } = {}) => {
 
   return app;
 };
-console.log("CI test");
+console.log("Testing CI and CD and automated pipeline deploymnent");
 
 const app = createApp();
 export default app;
