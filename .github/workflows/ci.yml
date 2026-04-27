@@ -27,7 +27,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Install server dependencies
         run: |
@@ -51,4 +51,4 @@ jobs:
       - name: Run client tests
         run: |
           cd client
-          npm test
+          npm run test:ci
